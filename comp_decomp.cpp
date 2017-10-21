@@ -1,8 +1,9 @@
 #include<bits/stdc++.h> 
 #define MAX_TREE_HT 100
 #include<math.h>
+using namespace std;
 
-//structure for each value in the array
+//structure for each value in the large file
 struct table
 {
       int data;
@@ -13,7 +14,7 @@ struct table
       int bin_size;     
 };
 
-//structure info
+//structure info to store the compression factors
 struct info
 {
 	int pad;
@@ -26,7 +27,8 @@ struct info
 };
 
  struct info info1;
-// A node of huffman tree
+ 
+// A node of huffman tree 
 struct QueueNode
 {
 	int data;
@@ -212,20 +214,20 @@ int isLeaf(struct QueueNode* root)
 	return !(root->left) && !(root->right) ;
 }
 
-// A utility function to print an array of size n
+// A utility function to print the huffman code 
 void printArr(int arr[],int n,struct table input[],int x)
 {
 	int i;
 	for (i = 0; i < n; ++i)
 	     {
-             printf("%d", arr[i]);
+            // printf("%d", arr[i]);
              input[x].a[i]=arr[i];
              input[x].huffcode[i]=arr[i];
-             }
+        }
              input[x].huffcode[i]=1;
              
         input[x].bin_size=n;
-	printf("\n");
+	//printf("\n");
 }
 
 // The main function that builds Huffman tree
@@ -264,8 +266,7 @@ struct QueueNode* buildHuffmanTree(struct table input[], int size)
 	return deQueue(secondQueue);
 }
 
-// Prints huffman codes from the root of Huffman Tree. It uses arr[] to
-// store codes
+// Prints huffman codes from the root of Huffman Tree. It uses arr[] to store codes
 void printCodes(struct QueueNode* root, int arr[], int top,struct table input[],int n)
 {
 	// Assign 0 to left edge and recur
@@ -286,20 +287,19 @@ void printCodes(struct QueueNode* root, int arr[], int top,struct table input[],
 	// characters, print the character and its code from arr[]
 	if(isLeaf(root))
 	{
-	    printf("%d: ", root->data);
+	   // printf("%d: ", root->data);
 	    int x=-1;
 	    int i;
 	    for(i=0;i<n;i++)
 	    {
                 if(input[i].data==root->data)
                 x=i;
-       	    }
+       }
 		printArr(arr, top,input,x);
 	}
 }
 
-// The main function that builds a Huffman Tree and print codes by traversing
-// the built Huffman Tree
+// The main function that builds a Huffman Tree and print codes by traversing the built Huffman Tree
 
 void HuffmanCodes(struct table input[100], int size)
 {
@@ -308,6 +308,7 @@ void HuffmanCodes(struct table input[100], int size)
 	printCodes(root, arr, top,input,size);
 }
 
+//reordering of data packets in the order they were sent
 int Big_Binary_8_Multiple(int seq[30000],int n,struct table input[300],int r,int binary[240000])
 {
 	int x=0,i,j;
@@ -319,7 +320,9 @@ int Big_Binary_8_Multiple(int seq[30000],int n,struct table input[300],int r,int
 			{
             int k;
 			for(k=0;k<input[j].bin_size;k++)
+			{
 			binary[x++]=input[j].a[k];
+			}
 			break;
 			}
 		}
@@ -330,12 +333,14 @@ int Big_Binary_8_Multiple(int seq[30000],int n,struct table input[300],int r,int
 	m++;
 	binary[x++]=0;
 	}
-	info1.pad=m;
+	info1.pad=m; ///padding in protocol interpretor
 	return x;
 }
 
 int Final_Output(int binary[240000],int bin_count,int final_output[30000])
 {
+	FILE *fp2;
+	fp2 = fopen("/media/naseem/New Volume/Firu/Studies/NonAcads/projects/inp_project/INP-FTP/sender_output.txt", "w");
 	
 	int x=0,sum=0,p=1,i;
 	for(i=0;i<bin_count;i++)
@@ -343,6 +348,7 @@ int Final_Output(int binary[240000],int bin_count,int final_output[30000])
 		if(i%8==0&&i!=0)
 		{
 		final_output[x++]=sum;
+		fprintf(fp2,"%d\n",final_output[x-1]);
 		sum=0;
 		p=1;
 		}
@@ -350,6 +356,7 @@ int Final_Output(int binary[240000],int bin_count,int final_output[30000])
 		p=p*2;	
 	}
 	final_output[x++]=sum;
+	fprintf(fp2,"%d\n",final_output[x-1]);
 	return x;
 
 }
@@ -376,27 +383,6 @@ int decoder(int final_output[30000],int fin_count,struct table input[300],int ou
 		}
 	}
 	
-/*	cout<<"Binary sequence in sets of 8 :\n";
-    	 for(int i=0;i<x;i++)
-    	 {
-    		 if(i%8==0)
-    	 	 cout<<"  ";
-    		 cout<<bin[i];
-    	 }
-    	 cout<<"\n\n";
-    	 */
-    	 
-	x=x-pad;
-	
-/*	cout<<"Binary sequence in sets of 8 after padding removed:\n";
-    	 for(int i=0;i<x;i++)
-    	 {
-    		 if(i%8==0)
-    	 	 cout<<"  ";
-    		 cout<<bin[i];
-    	 }
-    	 cout<<"\n\n";
-    	 */
 	int p=0;
 	int p1=1;
 	int sum=0;
@@ -427,19 +413,16 @@ int main()
 	FILE *fp,*fp1;
 	int seq[30000],n,hash[300];
     struct table input[300];
-	fp = fopen("C:/Users/Naseem/Desktop/input.txt", "r");
-	fp1=fopen("C:/Users/Naseem/Desktop/output.txt", "w");
+	fp = fopen("/media/naseem/New Volume/Firu/Studies/NonAcads/projects/inp_project/INP-FTP/sender_input.txt", "r");
+	fp1=fopen("/media/naseem/New Volume/Firu/Studies/NonAcads/projects/inp_project/INP-FTP/receiver_output.txt", "w");
 	
-//to 8-bit
+	
+//converting to 8-bit
      int i7,in[30000];
-   //1  printf("Enter the no. of values");
-    //2 scanf("%d",&n); 
      n=21600;
       int l=n;
-   //  printf("Enter the values\n");
      for(i7=0;i7<l;i7++)
       {
-     // scanf("%d",&in[i7]);
         int r;
 	     fscanf(fp, "%d",&r);
 	     in[i7]=r;
@@ -481,22 +464,15 @@ int main()
         	out[i7+2]=dif[i7];
      }
 
-   /*  printf("\n 8-bit output\n");
-     for(i7=0;i7<l+1;i7++)
-     printf("%d ",out[i7]);
-     */
 
-///////////////////////////////////////
-
-
-//	n=21601;
 	info1.length=n;
+	
 	//initialise frequency of each number to be zero
 	int i1;
 	for(i1=0;i1<256;i1++)
 	hash[i1]=0;
 	
-	//accept each number and increment the frequency of each number
+	//accept each number and increment the frequency of each number to find frequency of each number
 	int i9;
 	n++;
 	for(i9=0;i9<n;i9++)
@@ -528,62 +504,48 @@ int main()
   HuffmanCodes(input, r);
 	
 	//print the huffmann codes of each structure
-	printf("\n");
-	printf("data in table is\n");
-	printf("Data  Freq  Huff_Len  Huff_Code     Huff_Code2    Huff_Dec\n");
+	//--printf("\n");
+	//--printf("data in table is\n");
+	//--printf("Data  Freq  Huff_Len  Huff_Code     Huff_Code2    Huff_Dec\n");
 	int max=0;
 	int i3;
 	for(i3=0;i3<r;i3++)
 	{
-            printf("%d       %d       %d       ",input[i3].data,input[i3].freq,input[i3].bin_size);
+           //-- printf("%d       %d       %d       ",input[i3].data,input[i3].freq,input[i3].bin_size);
             int j1;
-            for(j1=0;j1<input[i3].bin_size;j1++)
-            printf("%d",input[i3].a[j1]); 
-            printf("    ");      
+           //-- for(j1=0;j1<input[i3].bin_size;j1++)
+          //--  printf("%d",input[i3].a[j1]); 
+         //--   printf("    ");      
             int p=1;
             int sum=0;
             int j2;
             for(j2=0;j2<=input[i3].bin_size;j2++)
             {
-            printf("%d",input[i3].huffcode[j2]);
+          //--  printf("%d",input[i3].huffcode[j2]);
             sum=sum+((input[i3].huffcode[j2])*(p));
             p=p*2;
             } 
             input[i3].huffdec=sum;
-            printf("          ");
-            printf("%d\n",input[i3].huffdec);
+          //--  printf("          ");
+          //--  printf("%d\n",input[i3].huffdec);
             if(input[i3].bin_size>max)
             max=input[i3].bin_size;
                  
          }
          info1.maxcodelen=max;
-         printf("\n");
+       //--  printf("\n");
          //store the binary sequence of the present sequence using huffmann coding 
          int binary[240000],bin_count;  
-         //print the binary sequence as sets of 8 each
-        // printf("Binary sequence in sets of 8 :\n");
+
     	 bin_count=Big_Binary_8_Multiple(seq,n,input,r,binary);
-    	/* for(int i=0;i<bin_count;i++)
-    	 {
-    		 if(i%8==0)
-    	 	 printf("  ");
-    		 printf("%d",binary[i]);
-    	 }
-    	 printf("\n\n");
-    	 */
     	 //find the compressed decimal output 
      int final_output[30000],fin_count;
     	 fin_count=Final_Output(binary,bin_count,final_output);
     	 
-    	 //print the final output 
-    /*	 printf("Compressed output in decimal is:\n");
-    	 int i4;
-    	 for(i4=0;i4<fin_count;i4++)
-    	 printf("%d",final_output[i4]);
-    	 printf("\n\n");
-    	 */
-    	 printf("final count is %d and n is %d\n ",fin_count,n);
+    	//-- printf("final count is %d and n is %d\n ",fin_count,n);
       info1.ratio=((double)fin_count)/n;
+      cout<<"final count sent is "<<fin_count<<"\n";
+      cout<<"n value initiallly is "<<n<<"\n";
     	
     	 //calculating compression values
     	 info1.compression_ratio=info1.ratio;
@@ -591,7 +553,7 @@ int main()
     	 info1.compression_percentage=(1-info1.ratio)*100;
     	 
     	 //printing the info structure and compression values
-    	 printf("info.pad is %d \n",info1.pad);;
+   /***** 	 printf("info.pad is %d \n",info1.pad);;
     	 printf("info.length is %d \n",info1.length);
     	 printf("max length is %d \n",info1.maxcodelen);
     	 printf("compressed output length is %d\n",fin_count);
@@ -599,55 +561,17 @@ int main()
     	 printf("compressed ratio is %f\n",info1.compression_ratio);
     	 printf("compressed factor is %f\n",info1.compression_factor);
     	 printf("compressed percentage is %f\n",info1.compression_percentage);
+    	 **/
     	 
+    	  printf("compressed ratio is %f\n",info1.compression_ratio);
+    	
+//--------------------------------------------------------------------- 	 
     	 //compressing ends and decompressor starts
 	
 	int output[30000];
 	int out_count=3;
 	out_count=decoder(final_output,fin_count,input,output,info1.pad,binary);
 		
-
-/*int fin[30000],fl,i;
-fl=n;
-for(i=0;i<fl;i++)
-fin[i]=output[i];
-
-int fmax=-1,a,b,fsign,j;
-int fout[fl-1];
-j=1;
-
-for(i=2;i<fl;i++)
-{
-   if(fin[i]>fmax)
-   fmax=fin[i];
-}
-
-a=fin[0]<<4;
-b=fin[1];
-fout[0]=a^b;
-float fy=log(fmax)/log(2);
-int r1=fy;
-if((r1-fy)!=0)
-fsign=fy;
-int fx=pow(2,fsign);
-
-for(i=2;i<fl;i++)
-{
-   if(fin[i]>=fx)
-   fout[j++]=fx-fin[i];
-   else
-   fout[j++]=fin[i];
-}
-
-for(i=1;i<(sizeof(fout)/4);i++)
-fout[i]=fout[i]+fout[i-1];
-
-printf("\n 12-bit output \n");
-for(i=0;i<(sizeof(fout)/4);i++)
-//printf("%d ",fout[i]);
-fprintf(fp1,"%d\t",fout[i]);
-
-*/
 int fl,i;
 fl=n;
 
@@ -681,9 +605,9 @@ for(i=2;i<fl;i++)
 for(i=1;i<(sizeof(fout)/4);i++)
 fout[i]=fout[i]+fout[i-1];
 
-printf("\n 12-bit output \n");
+//printf("\n 12-bit output \n");
 for(i=0;i<(sizeof(fout)/4);i++)
-fprintf(fp1,"%d\t",fout[i]);
+fprintf(fp1,"%d\n",fout[i]);
 //printf("%d ",fout[i]);
 
 	//calculating prd and quality score
@@ -703,16 +627,10 @@ fprintf(fp1,"%d\t",fout[i]);
     else
     qs=((double)info1.compression_factor)/prd;
     printf("\n\nPRD IS %f \n",prd);
-    if(prd==0)
-    printf("QS IS INFINITY\n");
-    else
-    printf("QS is %f\n",qs);
-    
-  
-	//getch();
+    //if(prd==0)
+   // printf("QS IS INFINITY\n");
+    //else
+    //printf("QS is %f\n",qs);
 	return 0;
 }
 
-/*
-	
-*/
